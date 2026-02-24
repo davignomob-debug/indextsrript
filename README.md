@@ -27,6 +27,8 @@ local Mutacoes = { "Ouro", "Diamante", "Rainbow", "Galaxy" }
 local AlvosSelecionados = {}
 local MutacoesSelecionadas = {}
 local FarmAtivo = false
+local AutoIndexAtivo = false
+local AutoIndexAba = "Normal"
 
 local dragging = false
 local dragInput = nil
@@ -35,7 +37,7 @@ local startPos = nil
 
 -- // FRAME PRINCIPAL
 local Main = Instance.new("Frame", sg)
-Main.Size = UDim2.fromOffset(400, 420)
+Main.Size = UDim2.fromOffset(400, 520)
 Main.Position = UDim2.new(0.5, -200, 0.3, 0)
 Main.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 Main.BorderSizePixel = 0
@@ -79,6 +81,7 @@ CloseBtn.MouseLeave:Connect(function()
 end)
 CloseBtn.MouseButton1Click:Connect(function()
     FarmAtivo = false
+    AutoIndexAtivo = false
     sg:Destroy()
 end)
 
@@ -96,6 +99,7 @@ Instance.new("UICorner", Toggle)
 
 Toggle.MouseButton1Click:Connect(function()
     FarmAtivo = not FarmAtivo
+    if FarmAtivo then AutoIndexAtivo = false end
     Toggle.Text = FarmAtivo and "FARMANDO... (ON)" or "AUTO FARM: OFF"
     Toggle.BackgroundColor3 = FarmAtivo and Color3.fromRGB(0, 100, 50) or Color3.fromRGB(35, 35, 35)
 end)
@@ -113,7 +117,7 @@ LabelBrainrot.TextXAlignment = Enum.TextXAlignment.Left
 
 -- // LISTA BRAINROTS
 local ListBrainrot = Instance.new("ScrollingFrame", Main)
-ListBrainrot.Size = UDim2.new(0.92, 0, 0, 130)
+ListBrainrot.Size = UDim2.new(0.92, 0, 0, 110)
 ListBrainrot.Position = UDim2.new(0.04, 0, 0, 122)
 ListBrainrot.CanvasSize = UDim2.new(0, 0, 0, #Brainrots * 32)
 ListBrainrot.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
@@ -143,7 +147,6 @@ for _, name in ipairs(Brainrots) do
             b.TextColor3 = Color3.fromRGB(0, 255, 127)
             b.BackgroundColor3 = Color3.fromRGB(20, 50, 35)
         end
-
         local count = 0
         for _ in pairs(AlvosSelecionados) do count = count + 1 end
         Title.Text = count == 0 and "AUTO FARM INFINITO" or count .. " BRAINROT(S)"
@@ -153,7 +156,7 @@ end
 -- // LABEL MUTAÇÕES
 local LabelMut = Instance.new("TextLabel", Main)
 LabelMut.Size = UDim2.new(0.92, 0, 0, 20)
-LabelMut.Position = UDim2.new(0.04, 0, 0, 262)
+LabelMut.Position = UDim2.new(0.04, 0, 0, 242)
 LabelMut.Text = "MUTAÇÕES (opcional):"
 LabelMut.TextColor3 = Color3.fromRGB(0, 255, 127)
 LabelMut.BackgroundTransparency = 1
@@ -163,8 +166,8 @@ LabelMut.TextXAlignment = Enum.TextXAlignment.Left
 
 -- // LISTA MUTAÇÕES
 local ListMut = Instance.new("ScrollingFrame", Main)
-ListMut.Size = UDim2.new(0.92, 0, 0, 110)
-ListMut.Position = UDim2.new(0.04, 0, 0, 284)
+ListMut.Size = UDim2.new(0.92, 0, 0, 90)
+ListMut.Position = UDim2.new(0.04, 0, 0, 264)
 ListMut.CanvasSize = UDim2.new(0, 0, 0, #Mutacoes * 32)
 ListMut.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 ListMut.ScrollBarThickness = 4
@@ -179,7 +182,6 @@ local MutCores = {
     ["Galaxy"] = Color3.fromRGB(180, 100, 255),
 }
 
--- nomes em portugues e ingles pra garantir
 local MutTraducao = {
     ["ouro"] = {"ouro", "gold"},
     ["diamante"] = {"diamante", "diamond"},
@@ -211,6 +213,96 @@ for _, name in ipairs(Mutacoes) do
     end)
 end
 
+-- // LABEL AUTO INDEX
+local LabelIndex = Instance.new("TextLabel", Main)
+LabelIndex.Size = UDim2.new(0.92, 0, 0, 20)
+LabelIndex.Position = UDim2.new(0.04, 0, 0, 364)
+LabelIndex.Text = "AUTO INDEX:"
+LabelIndex.TextColor3 = Color3.fromRGB(0, 200, 255)
+LabelIndex.BackgroundTransparency = 1
+LabelIndex.Font = Enum.Font.GothamBold
+LabelIndex.TextSize = 13
+LabelIndex.TextXAlignment = Enum.TextXAlignment.Left
+
+-- // ABAS DO INDEX
+local AbaFrame = Instance.new("Frame", Main)
+AbaFrame.Size = UDim2.new(0.92, 0, 0, 32)
+AbaFrame.Position = UDim2.new(0.04, 0, 0, 386)
+AbaFrame.BackgroundTransparency = 1
+local AbaLayout = Instance.new("UIListLayout", AbaFrame)
+AbaLayout.FillDirection = Enum.FillDirection.Horizontal
+AbaLayout.Padding = UDim.new(0, 4)
+
+local Abas = {"Normal", "Gold", "Diamond", "Rainbow", "Galaxy"}
+local AbaCores = {
+    Normal = Color3.fromRGB(200,200,200),
+    Gold = Color3.fromRGB(255,200,0),
+    Diamond = Color3.fromRGB(100,200,255),
+    Rainbow = Color3.fromRGB(255,100,200),
+    Galaxy = Color3.fromRGB(180,100,255),
+}
+local AbaBtns = {}
+
+for _, aba in ipairs(Abas) do
+    local btn = Instance.new("TextButton", AbaFrame)
+    btn.Size = UDim2.new(0, 68, 1, 0)
+    btn.Text = aba
+    btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    btn.TextColor3 = Color3.new(0.6, 0.6, 0.6)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 11
+    btn.BorderSizePixel = 0
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    AbaBtns[aba] = btn
+
+    btn.MouseButton1Click:Connect(function()
+        AutoIndexAba = aba
+        for _, b in pairs(AbaBtns) do
+            b.TextColor3 = Color3.new(0.6, 0.6, 0.6)
+            b.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        end
+        btn.TextColor3 = AbaCores[aba]
+        btn.BackgroundColor3 = Color3.fromRGB(20, 35, 50)
+    end)
+end
+AbaBtns["Normal"].TextColor3 = AbaCores["Normal"]
+AbaBtns["Normal"].BackgroundColor3 = Color3.fromRGB(20, 35, 50)
+
+-- // BOTÃO AUTO INDEX
+local ToggleIndex = Instance.new("TextButton", Main)
+ToggleIndex.Size = UDim2.new(0.92, 0, 0, 42)
+ToggleIndex.Position = UDim2.new(0.04, 0, 0, 426)
+ToggleIndex.Text = "AUTO INDEX: OFF"
+ToggleIndex.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+ToggleIndex.TextColor3 = Color3.new(1, 1, 1)
+ToggleIndex.Font = Enum.Font.GothamBold
+ToggleIndex.TextSize = 17
+ToggleIndex.BorderSizePixel = 0
+Instance.new("UICorner", ToggleIndex)
+
+-- // STATUS DO INDEX
+local StatusIndex = Instance.new("TextLabel", Main)
+StatusIndex.Size = UDim2.new(0.92, 0, 0, 20)
+StatusIndex.Position = UDim2.new(0.04, 0, 0, 474)
+StatusIndex.Text = ""
+StatusIndex.TextColor3 = Color3.fromRGB(0, 200, 255)
+StatusIndex.BackgroundTransparency = 1
+StatusIndex.Font = Enum.Font.Gotham
+StatusIndex.TextSize = 12
+StatusIndex.TextXAlignment = Enum.TextXAlignment.Left
+
+ToggleIndex.MouseButton1Click:Connect(function()
+    AutoIndexAtivo = not AutoIndexAtivo
+    if AutoIndexAtivo then
+        FarmAtivo = false
+        Toggle.Text = "AUTO FARM: OFF"
+        Toggle.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    end
+    ToggleIndex.Text = AutoIndexAtivo and "AUTO INDEX: ON" or "AUTO INDEX: OFF"
+    ToggleIndex.BackgroundColor3 = AutoIndexAtivo and Color3.fromRGB(0, 80, 120) or Color3.fromRGB(35, 35, 35)
+    if not AutoIndexAtivo then StatusIndex.Text = "" end
+end)
+
 -- // ARRASTAR
 TopBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -236,72 +328,52 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)
 
--- // COLETA TODO TEXTO RELEVANTE DO OBJETO PAI DO PROMPT
+-- // FUNÇÕES DE BUSCA
+
 local function GetTextoCompleto(prompt)
     local textos = {}
     local parent = prompt.Parent
-
-    -- nome do pai e avô
     if parent then
         table.insert(textos, parent.Name:lower())
         if parent.Parent then
             table.insert(textos, parent.Parent.Name:lower())
         end
     end
-
-    -- ObjectText e ActionText do próprio prompt
     table.insert(textos, (prompt.ObjectText or ""):lower())
     table.insert(textos, (prompt.ActionText or ""):lower())
-
-    -- textos de labels/billboards filhos do pai
     if parent then
         for _, desc in ipairs(parent:GetDescendants()) do
-            if desc:IsA("TextLabel") or desc:IsA("BillboardGui") or desc:IsA("TextBox") then
-                table.insert(textos, (desc.Text or ""):lower())
+            if desc:IsA("TextLabel") or desc:IsA("TextBox") then
+                pcall(function() table.insert(textos, desc.Text:lower()) end)
             end
-            -- atributos do objeto (ex: Mutation = "Gold")
-            local ok, val = pcall(function() return desc:GetAttribute("Mutation") end)
-            if ok and type(val) == "string" then
-                table.insert(textos, val:lower())
-            end
+            pcall(function()
+                local val = desc:GetAttribute("Mutation")
+                if type(val) == "string" then table.insert(textos, val:lower()) end
+            end)
         end
-        -- atributos do pai
-        local ok, val = pcall(function() return parent:GetAttribute("Mutation") end)
-        if ok and type(val) == "string" then
-            table.insert(textos, val:lower())
-        end
+        pcall(function()
+            local val = parent:GetAttribute("Mutation")
+            if type(val) == "string" then table.insert(textos, val:lower()) end
+        end)
     end
-
     return table.concat(textos, " ")
 end
 
--- // VERIFICA PALAVRA COMPLETA (evita falso positivo tipo "gold" em "golden")
 local function ContemPalavra(texto, palavra)
-    return texto:find("%f[%a]" .. palavra .. "%f[%A]") ~= nil
+    return texto:find("%f[%a]" .. palavra:lower() .. "%f[%A]") ~= nil
 end
 
--- // BUSCA PROMPT COM FILTRO DE MUTAÇÃO
 local function FindPromptDoAlvo()
     for _, obj in pairs(workspace:GetDescendants()) do
         if not obj:IsA("ProximityPrompt") then continue end
-
         local texto = GetTextoCompleto(obj)
-
         for alvo in pairs(AlvosSelecionados) do
             if not ContemPalavra(texto, alvo) then continue end
-
-            -- se nenhuma mutação selecionada, pega qualquer um
-            if next(MutacoesSelecionadas) == nil then
-                return obj
-            end
-
-            -- checa se tem a mutação no texto
+            if next(MutacoesSelecionadas) == nil then return obj end
             for mut in pairs(MutacoesSelecionadas) do
                 local variantes = MutTraducao[mut] or {mut}
                 for _, v in ipairs(variantes) do
-                    if ContemPalavra(texto, v) then
-                        return obj
-                    end
+                    if ContemPalavra(texto, v) then return obj end
                 end
             end
         end
@@ -309,29 +381,145 @@ local function FindPromptDoAlvo()
     return nil
 end
 
--- // LOOP PRINCIPAL
+local function FarmPrompt(prompt)
+    local item = prompt.Parent
+    local targetPart = item:IsA("BasePart") and item or item:FindFirstChildWhichIsA("BasePart")
+    if not targetPart then return end
+    local char = LocalPlayer.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+    pcall(function()
+        hrp.CFrame = targetPart.CFrame * CFrame.new(0, 2, 0)
+        task.wait(0.05)
+        prompt.HoldDuration = 0
+        fireproximityprompt(prompt)
+        task.wait(0.2)
+    end)
+end
+
+-- // LÊ A INDEX E RETORNA QUAIS BRAINROTS FALTAM
+local function GetMissingFromIndex()
+    local missing = {}
+    local ok, indexFrame = pcall(function()
+        return LocalPlayer.PlayerGui.UI.Frames.Index
+    end)
+    if not ok or not indexFrame then return missing end
+
+    -- clica na aba certa
+    pcall(function()
+        local btn = indexFrame.Buttons:FindFirstChild(AutoIndexAba)
+        if btn then btn.MouseButton1Click:Fire() end
+    end)
+    task.wait(0.4)
+
+    -- acha o ScrollingFrame da lista
+    local scroll = nil
+    for _, desc in ipairs(indexFrame:GetDescendants()) do
+        if desc:IsA("ScrollingFrame") then
+            scroll = desc
+            break
+        end
+    end
+    if not scroll then return missing end
+
+    for _, item in ipairs(scroll:GetChildren()) do
+        if not item:IsA("Frame") then continue end
+
+        -- pega nome do brainrot
+        local brainrotNome = nil
+        for _, desc in ipairs(item:GetDescendants()) do
+            if desc:IsA("TextLabel") and desc.Name == "Name" then
+                brainrotNome = desc.Text:lower()
+                break
+            end
+        end
+        -- fallback: qualquer TextLabel com texto sem $ e com mais de 3 chars
+        if not brainrotNome then
+            for _, desc in ipairs(item:GetDescendants()) do
+                if desc:IsA("TextLabel") and desc.Text ~= "" and not desc.Text:find("%$") and #desc.Text > 3 then
+                    brainrotNome = desc.Text:lower()
+                    break
+                end
+            end
+        end
+        if not brainrotNome or brainrotNome == "" then continue end
+
+        -- checa se já foi coletado (procura indicador visível)
+        local coletado = false
+        for _, desc in ipairs(item:GetDescendants()) do
+            local n = desc.Name:lower()
+            if n:find("check") or n:find("tick") or n:find("collect") or n:find("owned") or n:find("done") then
+                if desc.Visible then
+                    coletado = true
+                    break
+                end
+            end
+        end
+
+        if not coletado then
+            table.insert(missing, brainrotNome)
+        end
+    end
+
+    return missing
+end
+
+-- // LOOP AUTO FARM MANUAL
 task.spawn(function()
     while true do
         task.wait(0.1)
         if not FarmAtivo or next(AlvosSelecionados) == nil then continue end
-
         local prompt = FindPromptDoAlvo()
         if not prompt then continue end
+        FarmPrompt(prompt)
+    end
+end)
 
-        local item = prompt.Parent
-        local targetPart = item:IsA("BasePart") and item or item:FindFirstChildWhichIsA("BasePart")
-        if not targetPart then continue end
+-- // LOOP AUTO INDEX
+task.spawn(function()
+    while true do
+        task.wait(0.5)
+        if not AutoIndexAtivo then continue end
 
-        local char = LocalPlayer.Character
-        local hrp = char and char:FindFirstChild("HumanoidRootPart")
-        if not hrp then continue end
+        local missing = GetMissingFromIndex()
 
-        pcall(function()
-            hrp.CFrame = targetPart.CFrame * CFrame.new(0, 2, 0)
-            task.wait(0.05)
-            prompt.HoldDuration = 0
-            fireproximityprompt(prompt)
-            task.wait(0.2)
-        end)
+        if #missing == 0 then
+            StatusIndex.Text = "Index completa!"
+            task.wait(3)
+            continue
+        end
+
+        local alvoAtual = missing[1]
+        StatusIndex.Text = "Faltam: " .. #missing .. " | " .. alvoAtual
+
+        -- procura prompt do brainrot que falta com filtro de mutação/aba
+        local promptAchado = nil
+        for _, obj in pairs(workspace:GetDescendants()) do
+            if not obj:IsA("ProximityPrompt") then continue end
+            local texto = GetTextoCompleto(obj)
+            if not ContemPalavra(texto, alvoAtual) then continue end
+
+            if AutoIndexAba == "Normal" then
+                promptAchado = obj
+                break
+            else
+                local abaLower = AutoIndexAba:lower()
+                local variantes = MutTraducao[abaLower] or {abaLower}
+                for _, v in ipairs(variantes) do
+                    if ContemPalavra(texto, v) then
+                        promptAchado = obj
+                        break
+                    end
+                end
+                if promptAchado then break end
+            end
+        end
+
+        if promptAchado then
+            FarmPrompt(promptAchado)
+        else
+            StatusIndex.Text = "Procurando: " .. alvoAtual .. "..."
+            task.wait(1)
+        end
     end
 end)
